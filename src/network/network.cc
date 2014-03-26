@@ -375,6 +375,19 @@ Connection::Connection( const char *key_str, const char *ip, const char *port ) 
   has_remote_addr = true;
 
   socks.push_back( Socket( remote_addr.sa.sa_family ) );
+
+  if ( getenv("MOSH_CPORT") ) {
+    int local_port = atoi(getenv("MOSH_CPORT"));
+
+    struct sockaddr_in local_addr;
+    local_addr.sin_family = AF_INET;
+    local_addr.sin_addr.s_addr = INADDR_ANY;
+    local_addr.sin_port = htons(local_port);
+
+    if ( bind( sock(), (sockaddr*)&local_addr, sizeof(local_addr) ) != 0 ) {
+      throw NetworkException( "bind", errno );
+    }
+  }
 }
 
 void Connection::send( string s )
